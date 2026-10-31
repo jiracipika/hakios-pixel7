@@ -1,0 +1,12 @@
+[submodule "forks/hakios-xnu-kernel"]
+	path = forks/hakios-xnu-kernel
+	url = https://github.com/jiracipika/hakios-xnu-kernel
+	branch = main
+[submodule "forks/hakios-metal"]
+	path = forks/hakios-metal
+	url = https://github.com/jiracipika/hakios-metal
+	branch = main
+[submodule "forks/hakios-uefi"]
+	path = forks/hakios-uefi
+	url = https://github.com/jiracipika/hakios-uefi
+	branch = main

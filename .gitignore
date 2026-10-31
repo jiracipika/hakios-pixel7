@@ -1,0 +1,15 @@
+# reference clones of upstream device repos (read-only, re-clone as needed)
+notes/hakios-sm7325/
+notes/hakios-mt6768/
+
+# build outputs and run artifacts
+logs/
+out/
+*.dtb
+!prebuilt/*.dtb
+
+# local secrets/env
+.env
+
+# local tooling state
+.mimosa/
