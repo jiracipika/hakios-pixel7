@@ -13,3 +13,6 @@ out/
 
 # local tooling state
 .mimosa/
+
+# build logs
+*.log
