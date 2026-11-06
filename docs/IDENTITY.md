@@ -71,10 +71,19 @@ radio identifier — those don't exist in the device tree and stay placeholders.
 
 ## Status
 
-- [x] IPSW 16.5 20F66 for iPhone14,5 located + downloading (`/mnt/hdd2/stock/`)
-- [x] Identity pipeline understood (mkidentity.sh takes the d17ap member directly;
-      unpack.sh's iPhone-X pinning does not apply to identity-only use)
-- [ ] Extract member, generate identity.h on the pixel7 branch, diff against the
-      iPhone X identity for a field-by-field sanity table
+- [x] IPSW 16.5 20F66 for iPhone14,5 downloaded + sha256-verified
+      (`/mnt/hdd2/stock/iPhone14,5_16.5_20F66_Restore.ipsw`, 6 729 344 333 B,
+      `6415b86f…05c8f`)
+- [x] `DeviceTree.d17ap.im4p` extracted (49 135 B, kept at `/mnt/hdd2/stock/` for
+      instant regeneration)
+- [x] **identity.h generated from the iPhone 13 tree** (2026-11-05): decoded tree
+      239 436 B; root now carries `model=iPhone14,5`, `compatible=D17AP/iPhone14,5`,
+      `target-sub-type=D17AP`, `device_type=bootrom`; product/haptics/camera tables
+      built (74 root properties; pearl-camera, camera-hdr-version present).
+      IMEI/serial: zero fields — syscfg stays placeholder as upstream designed.
+      lzfse (BSD) auto-built into `xnu-deps/host/bin` by mkidentity.sh.
+- [x] identity.h confirmed gitignored (upstream contract: generated, never committed;
+      no Apple data can enter any repo)
 - [ ] Boot with iPhone 13 identity once M1 (XNU on hardware) is live — MobileGestalt
       queries answered as iPhone14,5 in the boot log
+- [ ] Optional: field-table diff vs the iPhone X identity (d22ap) for the docs
