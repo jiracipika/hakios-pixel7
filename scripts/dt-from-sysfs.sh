@@ -13,6 +13,11 @@ if [ ! -s "$OUTDIR/tree.capture" ]; then
   echo 'capturing tree over adb (hundreds of nodes; a few minutes)...'
   adb shell 'cd /sys/firmware/devicetree/base && find . | while IFS= read -r f; do if [ -d "$f" ]; then printf "=D=%s\n" "$f"; else printf "=F=%s\n" "$f"; base64 "$f" 2>/dev/null; fi; done' > "$OUTDIR/tree.capture"
 fi
+# A capture with zero =F= property lines (SELinux denied every read, as on the
+# Evolution X ROM) is a skeleton: rebuild it, but say so loudly — its DTB has no values.
+n_props=$(grep -c '^=F=' "$OUTDIR/tree.capture" || true)
+echo "capture: $(grep -c '^=D=' "$OUTDIR/tree.capture" || true) nodes, ${n_props} properties"
+[ "${n_props:-0}" -gt 0 ] || echo 'dt-from-sysfs: WARNING: 0 properties captured (SELinux) — DTB will be node names only' >&2
 
 python3 - "$OUTDIR" <<'PYEOF'
 import base64, os, struct, sys
@@ -62,12 +67,18 @@ def emit(node, name='/'):
     structs.extend(w32(2))
 emit(root)
 structs.extend(w32(9))
-while (40 + len(structs)) % 8: structs += b'\0'
-str_off = 40 + len(structs)
+# FDT layout: 40-byte header (10 fields), then the memory-reservation block (an
+# empty one = 16 zero bytes: the (0,0) terminator padded to a multiple of 8), then
+# the struct block (8-aligned), then strings. The old 12-field header wrote 48
+# bytes where off_dt_struct claimed 40 — every DTB it produced was invalid.
+RSV_OFF = 40
+STRUCT_OFF = RSV_OFF + 16
+while (STRUCT_OFF + len(structs)) % 8: structs += b'\0'
+str_off = STRUCT_OFF + len(structs)
 total = str_off + len(strings)
-hdr = struct.pack('>12I', 0xd00dfeed, total, 40, 40, 40, 17, 0, 0,
-                  len(strings), str_off, total, 40)
-out = hdr + bytes(structs) + bytes(strings)
+hdr = struct.pack('>10I', 0xd00dfeed, total, STRUCT_OFF, str_off, RSV_OFF,
+                  17, 16, 0, len(strings), len(structs))
+out = hdr + b'\0' * 16 + bytes(structs) + bytes(strings)
 assert len(out) == total, (len(out), total)
 open(os.path.join(out_dir, 'panther-fdt.dtb'), 'wb').write(out)
 print(f'wrote panther-fdt.dtb ({len(out)} bytes, strings {len(strings)}b)')

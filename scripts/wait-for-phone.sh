@@ -15,7 +15,12 @@ while true; do
     DEV="$(adb -s "$SER" shell getprop ro.product.device 2>/dev/null | tr -d '\r')"
     if [ "$DEV" = "panther" ]; then
       echo "[wait-for-phone] panther detected as $SER — starting FULL backup"
-      bash "$ROOT/scripts/backup-pixel7-full.sh" "$OUTROOT"
+      # backup-pixel7-full.sh takes SERIAL OUTDIR (serial-strict after the two-device
+      # incident); OUTDIR alone was read as the serial and the backup silently never ran
+      if ! bash "$ROOT/scripts/backup-pixel7-full.sh" "$SER" "$OUTROOT"; then
+        echo "[wait-for-phone] BACKUP FAILED — FDT pull skipped; fix before any fastboot work" >&2
+        exit 1
+      fi
       echo "[wait-for-phone] pulling device tree"
       adb -s "$SER" pull /sys/firmware/fdt "$FDT" && file "$FDT" \
         || echo "[wait-for-phone] WARN: FDT pull failed (some ROMs restrict it; factory image is the fallback)"
