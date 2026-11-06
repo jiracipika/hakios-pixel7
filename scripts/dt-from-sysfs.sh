@@ -30,7 +30,8 @@ for ln in lines:
     if ln.startswith(b'=D='):
         entries.append(('D', ln[3:].decode('utf-8', 'replace'), None)); cur = None
     elif ln.startswith(b'=F='):
-        cur = ('F', ln[3:].decode('utf-8', 'replace'), b''); entries.append(cur)
+        # a LIST, not a tuple: following base64 lines mutate entry[2] in place
+        cur = ['F', ln[3:].decode('utf-8', 'replace'), b'']; entries.append(cur)
     elif cur is not None:
         cur[2] += base64.b64decode(ln.strip() or b'')
 print(f'captured {len(entries)} entries')
@@ -53,12 +54,13 @@ for kind, path, data in entries:
 
 strings = bytearray(); stroff = {}
 def strof(s):
+    global strings   # `strings +=` without this rebinds a local and crashes
     if s not in stroff:
         stroff[s] = len(strings); strings += s.encode() + b'\0'
     return stroff[s]
 structs = bytearray()
 def w32(v): return struct.pack('>I', v)
-def emit(node, name='/'):
+def emit(node, name=''):   # FDT root carries the EMPTY name, not "/"
     structs.extend(w32(1)); structs.extend(name.encode() + b'\0' + b'\0' * (-(len(name) + 1) % 4))
     for pn, pd in node.props:
         structs.extend(w32(3)); structs.extend(w32(len(pd))); structs.extend(w32(strof(pn)))
