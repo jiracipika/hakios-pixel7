@@ -31,6 +31,28 @@ on the phone = the phone **reboots itself within seconds** (PSCI SYSTEM_RESET wi
 progress code — ABL ran our loader). Phone not attached at build time; test on next
 plug-in.
 
+## M0 RESULT (2026-11-06, 02:00 — phone 36071FDH20009D, slot b, unlocked): **GREEN**
+
+Ran all three variants via `scripts/phone-test-loop.sh` (headless loop; each run
+self-recovered the phone):
+
+| variant | result |
+|---|---|
+| `panther-boot.img` (v4/1584 + lz4-legacy, bare) | **NO-JUMP** — ABL refuses a bare header+kernel |
+| `panther-boot-raw-v4.img` (v4 + raw kernel, bare) | **NO-JUMP** — compression is not the discriminator |
+| `panther-boot-avb.img` (full 64MB stock image, kernel region patched, stock vbmeta+footer kept) | **HEARTBEAT** — phone self-rebooted to Android (~104 s round trip incl. full boot); uptime after = fresh |
+
+**Conclusion: `fastboot boot` on Pixel demands the complete partition-image shape —
+header + kernel + AVB0 vbmeta + AVBf footer at stock offsets (the Magisk-patch shape).
+Header version and kernel compression were never the blocker.** The AVB variant is now
+the primary M1 vehicle (`mkboot-gs201.sh <stock boot.img>` builds it).
+
+Live-tree facts captured the same session (CM0 for the camera workstream): **3 sensors
+instantiated (`sensor@0/1/2` = front/main/UW; numbering pinned empirically at CM3 via
+i2c addr)**, `dtbo_idx=22`, hw rev MP1.0, sku GVU6C, **4 memory banks live:
+0x80000000, 0x880000000, 0x900000000, 0x980000000** (gsloader's parser consumes these
+directly). Wireless adb backup link enabled: 10.0.0.22:5555 alongside USB.
+
 ## Where the real kernel DTB lives (bonus find)
 
 `vendor_kernel_boot` (Tensor-specific partition, dtb_loadaddr 0x11f00000) — two
