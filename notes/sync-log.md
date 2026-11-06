@@ -55,3 +55,17 @@
   - https://github.com/oosexgang/hakios-sm7325 main HEAD 04fbfff (manifest pins mac branch af52dfb)
   - https://github.com/oosexgang/hakios-mt6768 HEAD b60346c (unmoved since 10-30)
   - https://github.com/oosexgang/hackios-web HEAD 5bd869e (marketing site, not ported)
+
+## 2026-11-05 22:30 UTC (manual — automation did not log a run today)
+- hakios-xnu-kernel: fast-forwarded 87bf485 -> 2631f5d (228 commits), pushed; pixel7 rebased -> 0a266a2
+- BIG upstream restructure: hakios-metal MERGED INTO the kernel tree (hakios-metal/ dir, "with its
+  history", a128588); the hakios-metal repo is ARCHIVED (tip = d36f329 "Moved", history REWRITTEN —
+  our fork main force-reset to the tombstone to mirror). New top-level: socs/, sysimage/, mkxnuimg.py.
+  Identity system: xnuloader/mkidentity.sh builds identity.h from the user's OWN IPSW device tree
+  (DeviceTree.d22ap.im4p, iPhone XS default; sysimage/unpack.sh takes the IPSW). U-Boot path added
+  as Silicium alternative. "Darwin, not iOS" rename. Touch sampling, framebuffer SoC guards,
+  device-repo metal.args (9da1523) — panther's added (5cce3c5).
+- hakios-metal: upstream history rewritten at archival; fork main reset d7495f4 -> d36f329 (mirror
+  policy: follow upstream; history preserved inside the kernel tree)
+- hakios-uefi: up to date (687fa6c)
+- NOTE: Nov 5 12:00 automation did not fire/log — check automation runner health.
