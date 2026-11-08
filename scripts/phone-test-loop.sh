@@ -84,6 +84,8 @@ fi
 # 7. phone is back: report the round trip
 DT=$((SECONDS - BOOT_T0))
 BOOTED_DEV="$(adb -s "$SER" shell getprop ro.product.device 2>/dev/null | tr -d '\r')"
+BR="$(adb -s "$SER" shell getprop ro.boot.bootreason 2>/dev/null | tr -d '\r')"
+say "bootreason after comeback: ${BR:-unknown} (watchdog,* = wdt reset heard us)"
 say "RESULT: HEARTBEAT — phone self-rebooted to Android in ~${DT}s (device=${BOOTED_DEV:-settling})"
 say "gsloader ran under ABL: the fastboot-boot contract holds. M0 = GREEN"
 exit 0

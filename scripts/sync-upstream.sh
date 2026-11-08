@@ -15,12 +15,20 @@ LOG="$ROOT/notes/sync-log.md"
 TS="$(date -u '+%Y-%m-%d %H:%M UTC')"
 UPSTREAM_ORG="oosexgang"
 ORIGIN_OWNER="jiracipika"
+SCION_ORIGIN_URL="https://github.com/${ORIGIN_OWNER}/hakios-xnu-kernel"
 
 FORKS=(hakios-xnu-kernel hakios-metal hakios-uefi)
 WATCH=(
   "https://github.com/${UPSTREAM_ORG}/hakios-sm7325"
   "https://github.com/${UPSTREAM_ORG}/hakios-mt6768"
   "https://github.com/${UPSTREAM_ORG}/hackios-web"
+  # Scion lineage (fork of hakios-xnu-kernel; the working Samsung Exynos S9/S9+ iOS port
+  # being converted to panther — docs/PORT-FROM-SCION.md)
+  "https://github.com/Scion-Project/scion-kernel"
+  "https://github.com/Scion-Project/scion-starlte"
+  "https://github.com/Scion-Project/scion-star2lte"
+  "https://github.com/Scion-Project/scion-soc-lga"
+  "https://github.com/danstronics/ios-s9plus-exynos"
 )
 
 # Credentials: use GITHUB_TOKEN from the environment or ~/.hermes/.env (never stored on disk).
@@ -103,6 +111,43 @@ for repo in "${FORKS[@]}"; do
   new_tag="$(git -C "$dir" for-each-ref 'refs/tags/v*' --sort=-creatordate --format='%(refname:short)' | head -1)"
   [ -n "$new_tag" ] && log "- $repo: newest tag $new_tag"
 done
+
+# Scion mirror: track the Scion-Project kernel fork's main in the kernel submodule
+# (branch scion-main = pure mirror, ff-only, same policy as upstream main; port work
+# lives on pixel7-scion).
+SCION_KERNEL="$ROOT/forks/hakios-xnu-kernel"
+if [ -d "$SCION_KERNEL/.git" ]; then
+  if git -C "$SCION_KERNEL" remote get-url scion >/dev/null 2>&1; then
+    scion_err="$(git -C "$SCION_KERNEL" fetch scion main 2>&1)" || {
+      if printf '%s' "$scion_err" | detect_429; then die2 "HTTP 429 rate-limited fetching scion-kernel — stopping per policy."; fi
+      log "- scion-kernel: FETCH FAILED: $(printf '%s' "$scion_err" | tail -1)"; RESULT=2
+    }
+    scion_sha="$(git -C "$SCION_KERNEL" rev-parse refs/remotes/scion/main 2>/dev/null || true)"
+    if [ -n "$scion_sha" ]; then
+      cur="$(git -C "$SCION_KERNEL" rev-parse refs/heads/scion-main 2>/dev/null || true)"
+      if [ "$cur" = "$scion_sha" ]; then
+        log "- scion-kernel: mirror up to date ($scion_sha)"
+      elif git -C "$SCION_KERNEL" merge-base --is-ancestor "$cur" "$scion_sha" 2>/dev/null; then
+        git -C "$SCION_KERNEL" update-ref refs/heads/scion-main "$scion_sha" "$cur" \
+          && push_err="$(git -C "$SCION_KERNEL" -c credential.helper= \
+             -c "credential.helper=!f(){ printf 'username=%s\npassword=%s\n' '$GIT_USER' \"\$GITHUB_TOKEN\"; };f" \
+             push "$SCION_ORIGIN_URL" scion-main 2>&1)" || true
+        if [ -n "${push_err:-}" ] && printf '%s' "$push_err" | grep -qi 'error\|failed'; then
+          if printf '%s' "$push_err" | detect_429; then die2 "HTTP 429 rate-limited pushing scion-main — stopping per policy."; fi
+          log "- scion-kernel: mirror moved $cur -> $scion_sha but PUSH FAILED: $(printf '%s' "$push_err" | tail -1)"; RESULT=2
+        else
+          log "- scion-kernel: mirror fast-forwarded $cur -> $scion_sha, pushed"
+        fi
+      else
+        log "- scion-kernel: MIRROR DIVERGED (upstream force-push? needs a human)"; RESULT=2
+      fi
+      log "- scion-kernel: tip $(git -C "$SCION_KERNEL" log -1 --format='%h %s' "$scion_sha" 2>/dev/null | cut -c1-100)"
+    fi
+  else
+    log "- scion-kernel: no scion remote in forks/hakios-xnu-kernel (one-time setup needed)"
+    RESULT=1
+  fi
+fi
 
 log "- watch:"
 for w in "${WATCH[@]}"; do
