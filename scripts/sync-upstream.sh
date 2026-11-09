@@ -17,7 +17,12 @@ UPSTREAM_ORG="oosexgang"
 ORIGIN_OWNER="jiracipika"
 SCION_ORIGIN_URL="https://github.com/${ORIGIN_OWNER}/hakios-xnu-kernel"
 
-FORKS=(hakios-xnu-kernel hakios-metal hakios-uefi)
+# 2026-11-09 repo cleanup: hakios-metal fork dropped (upstream dead — the Metal
+# driver moved into the kernel repo), hakios-uefi fork dropped (not in panther's
+# boot path: panther boots via ABL, not UEFI). Both archived on GitHub; re-fork
+# in one click if ever needed. hakios-gs201 also archived — it was a subtree
+# duplicate of devices/panther inside hakios-xnu-kernel (same SHAs).
+FORKS=(hakios-xnu-kernel)
 WATCH=(
   "https://github.com/${UPSTREAM_ORG}/hakios-sm7325"
   "https://github.com/${UPSTREAM_ORG}/hakios-mt6768"
