@@ -20,8 +20,10 @@ SCION_ORIGIN_URL="https://github.com/${ORIGIN_OWNER}/hakios-xnu-kernel"
 # 2026-11-09 repo cleanup: hakios-metal fork dropped (upstream dead — the Metal
 # driver moved into the kernel repo), hakios-uefi fork dropped (not in panther's
 # boot path: panther boots via ABL, not UEFI). Both archived on GitHub; re-fork
-# in one click if ever needed. hakios-gs201 also archived — it was a subtree
-# duplicate of devices/panther inside hakios-xnu-kernel (same SHAs).
+# in one click if ever needed.
+# CORRECTION: hakios-gs201 stays — it is the canonical device repo (kernel-repo
+# .gitignore /devices/* by upstream design; devices/panther clones it; the
+# kernel fork pins its commit via devices/manifest.conf). Active repos: 3.
 FORKS=(hakios-xnu-kernel)
 WATCH=(
   "https://github.com/${UPSTREAM_ORG}/hakios-sm7325"
