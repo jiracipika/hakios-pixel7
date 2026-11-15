@@ -69,3 +69,33 @@
   policy: follow upstream; history preserved inside the kernel tree)
 - hakios-uefi: up to date (687fa6c)
 - NOTE: Nov 5 12:00 automation did not fire/log — check automation runner health.
+
+## 2026-11-15 17:01 UTC
+- hakios-xnu-kernel: fast-forwarded 2631f5d7d4f9d7322aca60991b34ba465dec343b -> 63fc2b4633bac3af8e57dadab9f5a8d4cb940438, pushed
+- hakios-xnu-kernel: newest tag v0.1.0
+- scion-kernel: mirror fast-forwarded 025f97557ac439651b08f2a906c01addfad77ece -> 2a79ef85e4bf1fe17bc94e3d1db58ba1d78aa247, pushed
+- scion-kernel: tip 2a79ef85 Merge pull request #296 from Scion-Project/contrib/anan-jaser-camera
+- watch:
+  - https://github.com/oosexgang/hakios-sm7325 HEAD 04fbfff933f52faf203a55aca9dd5680092e6ec5
+  - https://github.com/oosexgang/hakios-mt6768 HEAD ad65e1f4b3ba479e9d7ada98f17398b83cc6f285
+  - https://github.com/oosexgang/hackios-web HEAD 72a5a9a93a75a38005529f1f25c6f61a7c4d2418
+  - https://github.com/Scion-Project/scion-kernel HEAD 2a79ef85e4bf1fe17bc94e3d1db58ba1d78aa247
+  - https://github.com/Scion-Project/scion-starlte HEAD 87be95cc732570d256a6d6d462881945be671aca
+  - https://github.com/Scion-Project/scion-star2lte HEAD ee5bfa3678de0f0459d4c84429171987fdb446e1
+  - https://github.com/Scion-Project/scion-soc-lga HEAD 0a332c35c7a0aa795cd166599f23c5badeafc2dc
+  - https://github.com/danstronics/ios-s9plus-exynos HEAD 2d092398040f98685b0c5a07776df5e9f199b9dc
+- news (Pixel-7 relevance check):
+  - mt6768 MOVED b60346c -> ad65e1f4 (first movement since 10-30): WiFi WORKS (gen4m driver,
+    WPA2 join from Settings, Safari); Bluetooth WORKS (MT6631, HCI over STP ch0 on BTIF,
+    BLE scan sees devices, Settings discoverable as "iPhone"); main camera S5K JN1 live
+    preview in Camera.app + userland camera stack (camera_device.c 1822 ln, camera_isp.c 556 ln).
+    RESTRUCTURED: repo is now device-layer only — mtkloader + run scripts moved to
+    hakios-xnu-kernel branch "mtk" (a9627984 = mtk/loader + mtk/tools); the mt6768 repo no
+    longer has an mtk branch.
+  - kernel upstream delta = 4 commits (PR#53 soc-args register-cell width decode; PR#54
+    var-store older-checksum fallback); devices/manifest.conf UNCHANGED in the range; tags:
+    still v0.1.0 only, nothing new.
+  - oosexgang org: 7 repos, NO new ones (hackios-web, hackios-xnu-userland, hakios-metal,
+    hakios-mt6768, hakios-sm7325, hakios-uefi, hakios-xnu-kernel).
+  - token: ~/.hermes/.env GITHUB_TOKEN returns 401 (stale); this run exported gh auth token
+    via GITHUB_TOKEN env — all pushes succeeded. Token never written to disk.
